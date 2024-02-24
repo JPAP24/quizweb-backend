@@ -107,6 +107,36 @@ Admin.findQuizById = async (insertedId) => {
   return null;
 };
 
+Admin.findQuestionById = async (insertedID) => {
+  const [rows] = await db.execute(
+    "SELECT id, type, questionType, q1, q2, q3, q4, correctAns FROM quizm WHERE id = ?",
+    [insertedID]
+  );
+
+  if (rows.length > 0) {
+    const quizM = rows[0];
+    return quizM;
+  }
+
+  // If no questionType is found with the specified questionType
+  return null;
+};
+
+Admin.findQuestion = async (questionType) => {
+  const [rows] = await db.execute(
+    "SELECT id, type, questionType, q1, q2, q3, q4, correctAns FROM quizm WHERE questionType = ?",
+    [questionType]
+  );
+
+  if (rows.length > 0) {
+    const quizM = rows[0];
+    return quizM;
+  }
+
+  // If no questionType is found with the specified questionType
+  return null;
+};
+
 Admin.getAllQuizzes = async () => {
   const [rows] = await db.execute(
     "SELECT q.id, topic, content, a.username FROM quiz q INNER JOIN admin a ON q.adminId = a.id"
@@ -131,6 +161,38 @@ Admin.createQuiz = async (adminId, topic, content) => {
 
   // Return the inserted data only if a user is found
   return insertedQuiz || null;
+};
+
+Admin.createQuestion = async (
+  type,
+  questionType,
+  q1,
+  q2,
+  q3,
+  q4,
+  correctAns
+) => {
+  const [result] = await db.execute(
+    `INSERT INTO quizm (type, questionType, q1, q2, q3, q4, correctAns) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [type, questionType, q1, q2, q3, q4, correctAns]
+  );
+
+  // Get the inserted row's ID
+  const insertedID = result.insertId;
+
+  // Check if a Question is found based on the inserted ID
+  const insertedQuestion = await Admin.findQuestionById(insertedID); // Replace findById with your actual function
+
+  // Return the inserted data only if a Question is found
+  return insertedQuestion || null;
+};
+
+Admin.getAllQuestion = async () => {
+  const [rows] = await db.execute(
+    "SELECT id, type, questionType, q1, q2, q3, q4, correctAns FROM quizm"
+  );
+
+  return rows;
 };
 
 module.exports = Admin;
