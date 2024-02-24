@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-const verifyToken = async (req, res, next) => {
+const verifyUserToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
   if (!token)
@@ -13,9 +13,13 @@ const verifyToken = async (req, res, next) => {
       return res
         .status(403)
         .json({ error: "Forbidden", message: "Invalid token" });
+    if (user.type !== "user")
+      return res
+        .status(403)
+        .json({ error: "Forbidden", message: "User access required" });
     req.user = user;
     next();
   });
 };
 
-module.exports = { verifyToken };
+module.exports = { verifyUserToken };
