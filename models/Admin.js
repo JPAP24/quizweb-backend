@@ -8,9 +8,18 @@ if (process.env.NODE_ENV !== "production") {
 const Admin = {};
 
 Admin.findByUsernameAndPassword = async (adminId, password) => {
-  const [rows] = await db.execute("SELECT * FROM admin WHERE username = ?", [
-    adminId,
-  ]);
+  const [rows] = await db.execute(
+    `
+    SELECT id, username, password, 'admin' AS type
+    FROM admin
+    WHERE username = ?
+    UNION ALL
+    SELECT id, SUBSTRING_INDEX(email, '@', 1) AS username, password, type
+    FROM user
+    WHERE email LIKE ? AND type = 'professor'
+  `,
+    [adminId, adminId + "@%"]
+  );
 
   if (rows.length === 0) {
     throw new Error("Admin not found");
@@ -24,6 +33,8 @@ Admin.findByUsernameAndPassword = async (adminId, password) => {
   if (!passwordMatch) {
     throw new Error("Invalid password");
   }
+
+  console.log("User:", admin);
 
   return admin;
 };
@@ -43,9 +54,12 @@ Admin.findByEmail = async (adminEmail) => {
 };
 
 Admin.findByAdminId = async (adminId) => {
-  const [rows] = await db.execute("SELECT username FROM admin WHERE id = ?", [
-    adminId,
-  ]);
+  const [rows] = await db.execute(
+    `SELECT username FROM admin WHERE id = ? 
+    UNION ALL
+    SELECT SUBSTRING_INDEX(email, '@', 1) AS username FROM user WHERE id = ?`,
+    [adminId, adminId]
+  );
 
   if (rows.length > 0) {
     const admin = rows[0];
