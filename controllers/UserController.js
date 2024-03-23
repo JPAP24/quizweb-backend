@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const { generateAuthToken } = require("../lib/token");
 
 const collegeDegrees = {
   BSCS: {
@@ -50,19 +51,21 @@ UserController.registerUser = async (req, res) => {
     if (user) {
       return res
         .status(409)
-        .json({success: false, message: "This email is already in use."});
+        .json({ success: false, message: "This email is already in use." });
     }
 
-    let studentId;
-    const getMaxId = await User.findMaxUserId();
-    const currentYear = new Date().getFullYear();
+    let studentId = null;
+    if (type !== "professor") {
+      const getMaxId = await User.findMaxUserId();
+      const currentYear = new Date().getFullYear();
 
-    // Ensure getMaxId is a number, default to 0 if it's null
-    const maxIdAsNumber = getMaxId ? parseInt(getMaxId, 10) : 0;
+      // Ensure getMaxId is a number, default to 0 if it's null
+      const maxIdAsNumber = getMaxId ? parseInt(getMaxId, 10) : 0;
 
-    // Concatenate the current year to the student ID
-    studentId = maxIdAsNumber ? maxIdAsNumber + 1000 : 1000;
-    studentId = studentId.toString() + currentYear;
+      // Concatenate the current year to the student ID
+      studentId = maxIdAsNumber ? maxIdAsNumber + 1000 : 1000;
+      studentId = studentId.toString() + currentYear;
+    }
 
     const newUser = await User.createUserAccount(
       studentId,
@@ -80,11 +83,13 @@ UserController.registerUser = async (req, res) => {
     );
 
     if (newUser) {
-      res.status(200).json({success: true, message: "Registered successfully"});
+      res
+        .status(200)
+        .json({ success: true, message: "Registered successfully" });
     }
   } catch (err) {
     console.error("Error during registration:", err);
-    res.status(500).json({success: false, message: "Internal server error"});
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -93,11 +98,30 @@ UserController.getUsers = async (req, res) => {
     const result = await User.getAllUsers();
 
     if (result) {
-      res.status(200).json({success: true, result});
+      res.status(200).json({ success: true, result });
     }
   } catch (error) {
     console.error("Error getting all users:", error);
-    res.status(500).json({success: false, error: error.message});
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// Login User
+UserController.loginUser = async (req, res) => {
+  const { studentId, password } = req.body;
+  try {
+    const user = await User.findByStudentIDAndPassword(studentId, password);
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
+    }
+
+    const token = generateAuthToken(user.id);
+    res.json({ success: true, token });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

@@ -19,6 +19,7 @@ router.get("/admin/quizzes", verifyToken, AdminController.getQuizzes);
 router.get("/admin/question", verifyToken, AdminController.getQuestion);
 
 // user routes
+router.post("/user/login", UserController.loginUser);
 router.post("/user/add", verifyToken, UserController.registerUser);
 router.get("/users/get", verifyToken, UserController.getUsers);
 
