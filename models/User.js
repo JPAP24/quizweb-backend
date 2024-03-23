@@ -79,25 +79,48 @@ User.createUserAccount = async (
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const currentTimestamp = new Date();
-  const [result] = await db.execute(
-    `INSERT INTO user (studentId, degreeCode, degreeName, email, password, firstName, lastName, gender, status, type, countryCode, phone, dateUpdated, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      studentId,
-      degreeCode,
-      degreeName,
-      email,
-      hashedPassword,
-      firstName,
-      lastName,
-      gender,
-      status,
-      type,
-      countryCode,
-      phone,
-      currentTimestamp,
-      currentTimestamp,
-    ]
-  );
+  let sqlValues = [
+    degreeCode,
+    degreeName,
+    email,
+    hashedPassword,
+    firstName,
+    lastName,
+    gender,
+    status,
+    type,
+    countryCode,
+    phone,
+    currentTimestamp,
+    currentTimestamp,
+  ];
+  let sqlFields = [
+    "degreeCode",
+    "degreeName",
+    "email",
+    "password",
+    "firstName",
+    "lastName",
+    "gender",
+    "status",
+    "type",
+    "countryCode",
+    "phone",
+    "dateUpdated",
+    "dateCreated",
+  ];
+
+  // Add studentId to SQL query if it's not null
+  if (studentId !== null && studentId !== undefined) {
+    sqlFields.unshift("studentId");
+    sqlValues.unshift(studentId);
+  }
+
+  const sqlQuery = `INSERT INTO user (${sqlFields.join(
+    ", "
+  )}) VALUES (${sqlFields.map(() => "?").join(", ")})`;
+
+  const [result] = await db.execute(sqlQuery, sqlValues);
 
   // Get the inserted row's ID
   const insertedId = result.insertId;
@@ -115,6 +138,30 @@ User.getAllUsers = async () => {
   );
 
   return rows;
+};
+
+User.findByStudentIDAndPassword = async (studentID, password) => {
+  const [rows] = await db.execute(
+    `SELECT studentID, password FROM user WHERE studentId = ?`,
+    [studentID]
+  );
+
+  if (rows.length === 0) {
+    throw new Error("User not found");
+  }
+
+  const user = rows[0];
+
+  // Compare the provided password with the hashed password in the database
+  const passwordMatch = await bcrypt.compare(password, user.password);
+
+  if (!passwordMatch) {
+    throw new Error("Invalid password");
+  }
+
+  console.log("User:", user);
+
+  return user;
 };
 
 module.exports = User;
