@@ -1,15 +1,16 @@
 {
-  "name": "smartplanify-api",
+  "name": "quiz-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "> **Note**: This repo is no longer officially maintained as of Jan, 2023.\r > Feel free to use it, fork it and patch it for your own needs.",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Mervin Reyes",
+  "license": "MIT",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
@@ -20,5 +21,8 @@
     "localtunnel": "^2.0.2",
     "mysql2": "^3.6.5"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "directories": {
+    "lib": "lib"
+  }
 }
