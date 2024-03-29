@@ -39,8 +39,16 @@ UserController.registerUser = async (req, res) => {
 
   let password = confirm;
   let dCode = type == "professor" ? "PROF" : degreeCode;
-  let degreeName =
-    type == "professor" ? "College Professor" : collegeDegrees[degreeCode].name;
+
+  let degreeName;
+  if (type == "professor") {
+    degreeName = "College Professor";
+  } else if (collegeDegrees && collegeDegrees[degreeCode]) {
+    degreeName = collegeDegrees[degreeCode].name;
+  } else {
+    degreeName = "Unknown Degree";
+  }
+
   const status = "active";
 
   try {
@@ -83,9 +91,11 @@ UserController.registerUser = async (req, res) => {
     );
 
     if (newUser) {
-      res
-        .status(200)
-        .json({ success: true, message: "Registered successfully" });
+      res.status(200).json({
+        success: true,
+        message: "Registered successfully",
+        studentId: studentId,
+      });
     }
   } catch (err) {
     console.error("Error during registration:", err);
