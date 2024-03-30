@@ -22,19 +22,23 @@ app.use("/", routes);
 
 // Start the server and log the server URL
 
-const server = app.listen(port, "0.0.0.0", async () => {
+const server = app.listen(port, "0.0.0.0", async (err) => {
+  if (err) {
+    console.error("Error starting server:", err);
+    return;
+  }
+
   console.log(`Worker ${process.pid} listening at ${process.env.SERVER_URL}`);
 
   try {
     // Create a localtunnel with the desired subdomain
-    const tunnel = await localTunnel({
-      port,
-      subdomain: "quiz-api",
-    });
-
+    const tunnel = await localTunnel({ port, subdomain: "quiz-api" });
     console.log("LocalTunnel URL: ", tunnel.url);
 
-    // Optionally handle tunnel errors
+    tunnel.on("close", () => {
+      console.log("LocalTunnel connection closed");
+    });
+
     tunnel.on("error", (err) => {
       console.error("LocalTunnel error: ", err);
     });
