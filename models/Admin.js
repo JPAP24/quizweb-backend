@@ -152,29 +152,37 @@ Admin.findQuestion = async (questionType) => {
 };
 
 Admin.getAllQuizzes = async () => {
-  const [rows] = await db.execute(
-    "SELECT q.id, topic, content, a.username FROM quiz q INNER JOIN admin a ON q.adminId = a.id"
-  );
-
-  return rows;
+  try {
+    const [rows] = await db.execute(
+      `SELECT id, topic, content, userType FROM quiz`
+    );
+    return rows;
+  } catch (error) {
+    console.error("Error fetching quizzes:", error);
+    throw error;
+  }
 };
 
-Admin.createQuiz = async (adminId, topic, content) => {
-  // Insert the user into the database with the current timestamp as created_at
-  const currentTimestamp = new Date();
-  const [result] = await db.execute(
-    "INSERT INTO quiz (topic, content, adminId, dateUpdated, dateCreated) VALUES (?, ?, ?, ?, ?)",
-    [topic, content, adminId, currentTimestamp, currentTimestamp]
-  );
+Admin.createQuiz = async (userType, topic, content) => {
+  try {
+    const currentTimestamp = new Date();
+    // Modify the SQL query to include the subquery for userType
+    const [result] = await db.execute(
+      `
+    INSERT INTO quiz (topic, content, userType, dateUpdated, dateCreated)
+    VALUES (?, ?, ?, ?, ?)
+  `,
+      [topic, content, userType, currentTimestamp, currentTimestamp]
+    );
 
-  // Get the inserted row's ID
-  const insertedId = result.insertId;
-
-  // Check if a user is found based on the inserted ID
-  const insertedQuiz = await Admin.findQuizById(insertedId); // Replace findById with your actual function
-
-  // Return the inserted data only if a user is found
-  return insertedQuiz || null;
+    const insertedId = result.insertId;
+    // Assuming Admin.findQuizById is implemented to fetch a quiz by ID
+    const insertedQuiz = await Admin.findQuizById(insertedId);
+    return insertedQuiz || null;
+  } catch (error) {
+    console.error("Error creating quiz:", error);
+    throw error;
+  }
 };
 
 Admin.createQuestion = async (

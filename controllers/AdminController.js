@@ -95,14 +95,21 @@ AdminController.getAdminDetails = async (req, res) => {
 };
 
 AdminController.setUpQuiz = async (req, res) => {
-  const adminId = req.user.adminId;
   const { prompt, completionResult } = req.body;
   let topic = prompt;
   let content = completionResult;
 
   try {
-    const quiz = await Admin.createQuiz(adminId, topic, content);
+    console.log(req.user);
 
+    let userType = "";
+    if (req.user && req.user.adminId === 1) {
+      userType = "admin";
+    } else {
+      userType = "professor";
+    }
+
+    const quiz = await Admin.createQuiz(userType, topic, content);
     if (quiz) {
       res.status(200).json({ success: true, quiz });
     }

@@ -6,11 +6,9 @@ const createQuizTable = async () => {
     id INT AUTO_INCREMENT PRIMARY KEY,
     topic VARCHAR(255) DEFAULT NULL,
     content LONGTEXT DEFAULT NULL,
-    adminId INT DEFAULT NULL,
+    userType VARCHAR(255) DEFAULT NULL,
     dateUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    dateCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (adminId) REFERENCES admin(id),
-    INDEX admin_id_index (adminId)
+    dateCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
   `);
 };
