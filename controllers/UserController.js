@@ -73,6 +73,8 @@ UserController.registerUser = async (req, res) => {
       // Concatenate the current year to the student ID
       studentId = maxIdAsNumber ? maxIdAsNumber + 1000 : 1000;
       studentId = studentId.toString() + currentYear;
+    } else {
+      studentId = `PROF_${Math.random().toString(36).substring(2, 10)}`;
     }
 
     const newUser = await User.createUserAccount(
